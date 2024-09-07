@@ -10,5 +10,7 @@ import (
 // SetUpUserRoutes sets up the user routes
 func SetUpTaskRoutes(db *sql.DB, router *gin.Engine) {
 
+	router.GET("/tasks/user", controllers.GetTasksForUser)
+
 	router.POST("/addTask", controllers.AddTask)
 }

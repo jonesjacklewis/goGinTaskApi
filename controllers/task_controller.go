@@ -80,3 +80,50 @@ func AddTask(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, gin.H{"error": false, "data": user_task_response})
 
 }
+
+func GetTasksForUser(c *gin.Context) {
+	var display_name string = c.PostForm("display_name")
+
+	if display_name == "" {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": true, "message": "display_name is required"})
+		return
+	}
+
+	user_id, err := repositories.UserRepository.GetUserIdByDisplayName(display_name)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": true, "message": "Failed to get user"})
+		fmt.Println("Failed to get user:", err)
+		return
+	}
+
+	if user_id < 1 {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": true, "message": "User not found"})
+		return
+	}
+
+	user_task_ids, err := repositories.UserTaskRepository.GetTaskIdsForUser(user_id)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": true, "message": "Failed to get tasks for user"})
+		return
+	}
+
+	var user_tasks []models.Task = []models.Task{}
+
+	for _, task_id := range user_task_ids {
+		task, err := repositories.TaskRepository.GetTaskById(task_id)
+
+		if err != nil {
+			continue
+		}
+
+		if task.Id == -1 {
+			continue
+		}
+
+		user_tasks = append(user_tasks, task)
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"error": false, "data": user_tasks})
+}
