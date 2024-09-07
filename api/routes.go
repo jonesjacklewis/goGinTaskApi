@@ -11,6 +11,7 @@ func SetupRouter() *gin.Engine {
 	router := gin.Default()
 
 	v1.SetUpUserRoutes(nil, router)
+	v1.SetUpTaskRoutes(nil, router)
 
 	return router
 }
